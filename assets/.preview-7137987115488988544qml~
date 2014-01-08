@@ -1,0 +1,67 @@
+// Segmented control navigation project template
+import bb.cascades 1.0
+import com.rim.example.custom 1.0
+
+NavigationPane {
+    id: nav
+    Page {
+        content: Container {
+            SegmentedControl {
+                // define segmented control options here
+                Option {
+                    id: option1
+                    text: qsTr("Basic")
+                    value: 1
+                    selected: true
+                }
+                Option {
+                    id: option2
+                    text: qsTr("Advanced")
+//                    imageSource: "asset:///images/picture1.png"
+                    value: 2
+                }
+                // Option { id: option3; text: qsTr("Category 2"); imageSource: "asset:///images/picture2.png"; value: 2 }
+                onSelectedOptionChanged: {
+                    // write handler for the choosen selection here
+                    if (selectedOption) myListModel.setFilter(selectedOption.value);
+                }
+                horizontalAlignment: HorizontalAlignment.Fill
+            }
+            ListView {
+                id: listView
+                dataModel: MyListModel {
+                    id: myListModel
+                }
+                layout: GridListLayout {
+                }
+                listItemComponents: [
+                    // define component which will represent list item GUI appearence
+                    ListItemComponent {
+
+                        //   list item GUI appearence component is defined in external MyListItem.qml file
+                        MyListItem {
+                        }
+                    }
+                ]
+                                onTriggered: {
+                                     var page = nav.deprecatedPushQmlByString("Page.qml")
+                
+                                }
+                horizontalAlignment: HorizontalAlignment.Center
+                verticalAlignment: VerticalAlignment.Center
+            }
+        }
+    }
+    onCreationCompleted: {
+        // this slot is called when declarative scene is created
+        // write post creation initialization here
+        console.log("Page - onCreationCompleted()")
+
+        // enable layout to adapt to the device rotation
+        // don't forget to enable screen rotation in bar-bescriptor.xml (Application->Orientation->Auto-orient)
+        OrientationSupport.supportedDisplayOrientation = SupportedDisplayOrientation.All;
+
+        // populate list view model with the sample data
+        myListModel.load("app/native/assets/mydata.json")
+    }
+}

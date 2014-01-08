@@ -1,0 +1,154 @@
+// Segmented control navigation project template
+import bb.cascades 1.0
+import com.rim.example.custom 1.0
+
+NavigationPane {
+    id: nav
+    Page {
+        content: Container {
+            SegmentedControl {
+
+                // define segmented control options here
+                Option {
+                    id: option1
+                    text: qsTr("All")
+                    value: 0
+                    selected: true
+                }
+                Option {
+                    id: option2
+                    text: qsTr("Basic")
+                    imageSource: "asset:///images/picture1.png"
+                    value: 1
+                }
+                Option {
+                    id: option3
+                    text: qsTr("Advanced")
+                    imageSource: "asset:///images/picture2.png"
+                    value: 2
+                }
+                onSelectedOptionChanged: {
+                    // write handler for the choosen selection here
+                    if (selectedOption) myListModel.setFilter(selectedOption.value);
+                }
+                horizontalAlignment: HorizontalAlignment.Fill
+            }
+            ListView {
+                id: listView
+                dataModel: MyListModel {
+                    id: myListModel
+                }
+                layout: GridListLayout {
+                }
+                listItemComponents: [
+                    // define component which will represent list item GUI appearence
+                    ListItemComponent {
+
+                        //   list item GUI appearence component is defined in external MyListItem.qml file
+                        MyListItem {
+                        }
+                    }
+                ]
+                onTriggered: {
+                    console.log("selected_index: " + indexPath)
+                    var curr_item = dataModel.data(indexPath)
+                    // show detail page for selected item
+                    setDetailItem(curr_item)
+                }
+                horizontalAlignment: HorizontalAlignment.Center
+                verticalAlignment: VerticalAlignment.Center
+            }
+        }
+        actions: [
+            ActionItem {
+
+                // An ActionItem for adding more items to the list.
+                title: "About us"
+                imageSource: "asset:///images/add.png"
+                ActionBar.placement: ActionBarPlacement.OnBar
+
+                // If there are one hundred item is in the list it is not possible to add more items.
+                onTriggered: {
+                    var page = pageDefinition.createObject();
+                    nav.push(page);
+                }
+                attachedObjects: ComponentDefinition {
+                    id: pageDefinition
+                    source: "page1.qml"
+                }
+            }
+        ]
+    }
+    attachedObjects: [
+        ComponentDefinition {
+            id: secondPageDefinition
+            content: Page {
+                property alias text: lblText.text
+                property alias image: imgView.imageSource
+                id: pgDetail
+                paneProperties: NavigationPaneProperties {
+                    backButton: ActionItem {
+                        onTriggered: {
+                            nav.pop();
+                        }
+                    }
+                }
+                content: Container {
+                    layout: StackLayout {
+                    }
+                    topPadding: 20
+                    //                                       SegmentedControl {
+                    //                        options: Option {
+                    //                            text: "Description"
+                    //                        }
+                    //                    }
+                    ImageView {
+                        id: imgView
+
+                        //scalingMethod: ScalingMethod.None
+                        scaleX: 5
+                        layoutProperties: StackLayoutProperties {
+                            
+                            
+                            spaceQuota: 1.0 // the image fills rest of the Page
+                        }
+                        verticalAlignment: VerticalAlignment.Top
+                        horizontalAlignment: HorizontalAlignment.Center
+                    }
+                    Divider {
+                        // bottomMargin: 40
+                    }
+                    TextArea {
+                        topPadding: 50
+                        id: lblText
+                        enabled: false
+                        textStyle.base: SystemDefaults.TextStyles.SmallText
+                        //textStyle.color: Color.Yellow
+                        horizontalAlignment: HorizontalAlignment.Fill
+                        verticalAlignment: verticalAlignment.bottom
+                    }
+                }
+            }
+        }
+    ]
+    function setDetailItem(item) {
+        // show detail page
+        var page = secondPageDefinition.createObject();
+        page.text = item.des
+        page.image = item.image
+        //page.field = item.dec
+        nav.push(page)
+    }
+    onCreationCompleted: {
+        // this slot is called when declarative scene is created
+        // write post creation initialization here
+        console.log("Page - onCreationCompleted()")
+
+        // enable layout to adapt to the device rotation
+        // don't forget to enable screen rotation in bar-bescriptor.xml (Application->Orientation->Auto-orient)
+        OrientationSupport.supportedDisplayOrientation = SupportedDisplayOrientation.All;
+
+        // populate list view model with the sample data
+        myListModel.load("app/native/assets/mydata.json")
+    }
+}
